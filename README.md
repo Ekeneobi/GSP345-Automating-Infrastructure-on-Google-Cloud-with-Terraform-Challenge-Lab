@@ -25,15 +25,15 @@ cd
 Add the following to the each _variables.tf_ file, and fill in the _GCP Project ID_:
 ```
 variable "region" {
- default = "us-central1"
+ default = "us-east1"
 }
 
 variable "zone" {
- default = "us-central1-a"
+ default = "us-east1-b"
 }
 
 variable "project_id" {
- default = "<FILL IN PROJECT ID>"
+ default = "<qwiklabs-gcp-04-c4ad03ed5806>"
 }
 ```
 Add the following to the _main.tf_ file:
@@ -111,11 +111,11 @@ allow_stopping_for_update = true
 ```
 To import the first instance, use the following command, using the Instance ID for _tf-instance-1_ you copied down earlier.
 ```
-terraform import module.instances.google_compute_instance.tf-instance-1 <FILL IN INSTANCE 1 ID>
+terraform import module.instances.google_compute_instance.tf-instance-1 423822793185639698
 ```
 To import the second instance, use the following command, using the Instance ID for _tf-instance-2_ you copied down earlier.
 ```
-terraform import module.instances.google_compute_instance.tf-instance-2 <FILL IN INSTANCE 2 ID>
+terraform import module.instances.google_compute_instance.tf-instance-2 3091185229907049746
 ```
 The two instances have now been imported into your terraform configuration. You can now run the commands to update the state of Terraform. Type _yes_ at the dialogue after you run the apply command to accept the state changes.
 ```
@@ -126,7 +126,7 @@ terraform apply
 Add the following code to the _modules/storage/storage.tf_ file, and fill in the _Bucket Name_:
 ```
 resource "google_storage_bucket" "storage-bucket" {
-  name          = "<FILL IN BUCKET NAME>"
+  name          = "tf-bucket-522079"
   location      = "US"
   force_destroy = true
   uniform_bucket_level_access = true
@@ -143,32 +143,32 @@ Run the following commands to initialize the module and create the storage bucke
 terraform init
 terraform apply
 ```
-Next, update the _main.tf_ file so that the terraform block looks like the following. Fill in your _GCP Project ID_ for the bucket argument definition.
+Next, update the _main.tf_ file so that the terraform block looks like the following. Fill in your _GCP bucket ID_ for the bucket argument definition.
 ```
 terraform {
   backend "gcs" {
-    bucket  = "<FILL IN PROJECT ID>"
+    bucket  = "tf-bucket-522079"
  prefix  = "terraform/state"
   }
   required_providers {
     google = {
       source = "hashicorp/google"
-      version = "3.55.0"
+      version = "~> 3.83.0"
     }
   }
 }
 ```
 Run the following to initialize the remote backend. Type _yes_ at the prompt.
 ```
-terraform init
+terraform init -upgrade
 ```
 <br/> **TASK 3: Modify and update infrastructure** <br/>
 Navigate to _modules/instances/instance.tf_. Replace the entire contents of the file with the following, and fill in your _Instance 3 ID_:
 ```
 resource "google_compute_instance" "tf-instance-1" {
   name         = "tf-instance-1"
-  machine_type = "n1-standard-2"
-  zone         = "us-central1-a"
+  machine_type = "e2-standard-2"
+  zone         = "us-east1-b"
   allow_stopping_for_update = true
 
   boot_disk {
@@ -184,8 +184,8 @@ resource "google_compute_instance" "tf-instance-1" {
 
 resource "google_compute_instance" "tf-instance-2" {
   name         = "tf-instance-2"
-  machine_type = "n1-standard-2"
-  zone         = "us-central1-a"
+  machine_type = "e2-standard-2"
+  zone         = "us-east1-b"
   allow_stopping_for_update = true
 
   boot_disk {
@@ -199,10 +199,10 @@ resource "google_compute_instance" "tf-instance-2" {
   }
 }
 
-resource "google_compute_instance" "<FILL IN INSTANCE 3 NAME>" {
-  name         = "<FILL IN INSTANCE 3 NAME>"
-  machine_type = "n1-standard-2"
-  zone         = "us-central1-a"
+resource "google_compute_instance" "tf-instance-529167" {
+  name         = "tf-instance-529167"
+  machine_type = "e2-standard-2"
+  zone         = "us-east1-b"
   allow_stopping_for_update = true
 
   boot_disk {
@@ -224,7 +224,7 @@ terraform apply
 <br/> **TASK 4: Taint and destroy resources** <br/>
 Taint the _tf-instance-3_ resource by running the following command, and fill in your _Instance 3 ID_:
 ```
-terraform taint module.instances.google_compute_instance.<FILL IN INSTANCE 3 NAME>
+terraform taint module.instances.google_compute_instance.tf-instance-529167
 ```
 Run the following commands to apply the changes:
 ```
@@ -233,10 +233,10 @@ terraform apply
 ```
 Remove the _tf-instance-3_ resource from the _instances.tf_ file. Delete the following code chunk from the file.
 ```
-resource "google_compute_instance" "<FILL IN INSTANCE 3 NAME>" {
-  name         = "<FILL IN INSTANCE 3 NAME>"
+resource "google_compute_instance" "tf-instance-529167" {
+  name         = "tf-instance-529167"
   machine_type = "n1-standard-2"
-  zone         = "us-central1-a"
+  zone         = "us-east1-b"
   allow_stopping_for_update = true
 
   boot_disk {
@@ -259,22 +259,22 @@ Copy and paste the following to the end of _main.tf_ file, fill in _Version Numb
 ```
 module "vpc" {
     source  = "terraform-google-modules/network/google"
-    version = "~> <FILL IN VERSION NUMBER>"
+    version = "~> 6.0"
 
-    project_id   = "qwiklabs-gcp-04-f2c1c01a09d3"
-    network_name = "<FILL IN NETWORK NAME>"
+    project_id   = "qwiklabs-gcp-04-c4ad03ed5806"
+    network_name = "tf-vpc-156151"
     routing_mode = "GLOBAL"
 
     subnets = [
         {
             subnet_name           = "subnet-01"
             subnet_ip             = "10.10.10.0/24"
-            subnet_region         = "us-central1"
+            subnet_region         = "us-east1"
         },
         {
             subnet_name           = "subnet-02"
             subnet_ip             = "10.10.20.0/24"
-            subnet_region         = "us-central1"
+            subnet_region         = "us-east1"
             subnet_private_access = "true"
             subnet_flow_logs      = "true"
             description           = "This subnet has a description"
@@ -292,7 +292,7 @@ Navigate to _modules/instances/instances.tf_. Replace the entire contents of the
 resource "google_compute_instance" "tf-instance-1" {
   name         = "tf-instance-1"
   machine_type = "n1-standard-2"
-  zone         = "us-central1-a"
+  zone         = "us-east1-b"
   allow_stopping_for_update = true
 
   boot_disk {
@@ -302,7 +302,7 @@ resource "google_compute_instance" "tf-instance-1" {
   }
 
   network_interface {
- network = "<FILL IN NETWORK NAME>"
+ network = "tf-vpc-156151"
     subnetwork = "subnet-01"
   }
 }
@@ -310,7 +310,7 @@ resource "google_compute_instance" "tf-instance-1" {
 resource "google_compute_instance" "tf-instance-2" {
   name         = "tf-instance-2"
   machine_type = "n1-standard-2"
-  zone         = "us-central1-a"
+  zone         = "us-east1-b"
   allow_stopping_for_update = true
 
   boot_disk {
@@ -320,7 +320,7 @@ resource "google_compute_instance" "tf-instance-2" {
   }
 
   network_interface {
- network = "<FILL IN NETWORK NAME>"
+ network = "tf-vpc-156151"
     subnetwork = "subnet-02"
   }
 }
@@ -335,7 +335,7 @@ Add the following resource to the _main.tf_ file, fill in the _GCP Project ID_ a
 ```
 resource "google_compute_firewall" "tf-firewall" {
   name    = "tf-firewall"
- network = "projects/<FILL IN PROJECT_ID>/global/networks/<FILL IN NETWORK NAME>"
+ network = "projects/qwiklabs-gcp-04-c4ad03ed5806/global/networks/tf-vpc-156151"
 
   allow {
     protocol = "tcp"
